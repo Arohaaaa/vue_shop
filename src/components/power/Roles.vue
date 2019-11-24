@@ -83,14 +83,22 @@
           <!-- 编辑角色对话框 -->
         <el-dialog
             title="分配权限"
-            :visible.sync="setRightDialogVisible"
+            :visible.sync="editDialogVisible"
             width="30%">
             <!-- 内容主体区域 -->
-
+            <el-form :model="editForm" :rules="addRoleRules"
+            label-width="80px" ref="editFormRef">
+                <el-form-item label="角色名称" prop="roleName">
+                    <el-input v-model="editForm.roleName"></el-input>
+                </el-form-item>
+                <el-form-item label="角色描述" prop="roleDesc">
+                    <el-input v-model="editForm.roleDesc"></el-input>
+                </el-form-item>
+            </el-form>
             <!-- 底部区域 -->
             <span slot="footer" class="dialog-footer">
-                <el-button @click="addDialogVisible = false">取 消</el-button>
-                <el-button type="primary" @click="allotRights">确 定</el-button>
+                <el-button @click="editDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="editRoleForm">确 定</el-button>
             </span>
         </el-dialog>
 
