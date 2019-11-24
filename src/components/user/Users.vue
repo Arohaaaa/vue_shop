@@ -1,7 +1,7 @@
 <template>
     <div>
         <el-breadcrumb separator-class="el-icon-arrow-right">
-            <el-breadcrumb-item :to="{ path: '/welcome' }">首页</el-breadcrumb-item>
+            <el-breadcrumb-item :to="{ path: '/home' }">首页</el-breadcrumb-item>
             <el-breadcrumb-item>用户管理</el-breadcrumb-item>
             <el-breadcrumb-item>用户列表</el-breadcrumb-item>
         </el-breadcrumb>
@@ -42,7 +42,7 @@
                         </el-tooltip>
                         <!-- 分配角色 -->
                           <el-tooltip  effect="dark" content="分配角色" placement="top" :enterable="false">
-                            <el-button type="warning" icon="el-icon-setting" size="mini"></el-button>
+                            <el-button type="warning" icon="el-icon-setting" size="mini" @click="setRole(scope.row)"></el-button>
                         </el-tooltip>
                     </template>
                 </el-table-column>
@@ -90,7 +90,7 @@
 
          <!-- 修改用户对话框 -->
          <el-dialog
-            title="提示"
+            title="修改用户"
             :visible.sync="modifyDialogVisible"
             width="30%"
             @close="modifyDialogClosed">
@@ -111,6 +111,33 @@
             <span slot="footer" class="dialog-footer">
                 <el-button @click="modifyDialogVisible = false">取 消</el-button>
                 <el-button type="primary" @click="modifyUserInfo">确 定</el-button>
+            </span>
+        </el-dialog>
+
+        <!-- 分配角色对话框 -->
+         <el-dialog
+            title="分配角色"
+            :visible.sync="setRoleDialogVisible"
+            width="30%">
+            <!-- 内容主体区域 -->
+            <div>
+                <p>当前的用户:{{userInfo.username}}</p>
+                <p>当前的用户:{{userInfo.role_name}}</p>
+                <p>分配新角色:
+                    <el-select v-model="selectedRoleId" placeholder="请选择">
+                        <el-option
+                        v-for="item in rolesList"
+                        :key="item.id"
+                        :label="item.roleName"
+                        :value="item.id">
+                        </el-option>
+                    </el-select>
+                </p>
+            </div>
+            <!-- 底部区域 -->
+            <span slot="footer" class="dialog-footer">
+                <el-button @click="setRoleDialogVisible = false">取 消</el-button>
+                <el-button type="primary" @click="saveRoleInfo">确 定</el-button>
             </span>
         </el-dialog>
 
@@ -152,6 +179,8 @@ export default {
       addDialogVisible: false,
       // 控制修改用户对话框的显示与隐藏
       modifyDialogVisible: false,
+      // 分配角色对话框的显示与隐藏
+      setRoleDialogVisible: false,
       // 添加用户表单验证规则
       addUserRules: {
         username: [
@@ -190,9 +219,13 @@ export default {
         mobile: ''
       },
       // 查询到的用户对象
-      modifyForm: {
-
-      }
+      modifyForm: {},
+      // 需要被分配角色的用户信息
+      userInfo: {},
+      // 所有角色的数据列表
+      rolesList: {},
+      // 已选中的默认ID值
+      selectedRoleId: ''
     }
   },
   created () {
@@ -228,6 +261,7 @@ export default {
     },
     // 监听添加用户对话框的关闭事件
     addDialogClosed () {
+      console.log(this.$refs)
       this.$refs.addFormRef.resetFields()
     },
     // 监听修改用户对话框的关闭事件
@@ -284,6 +318,27 @@ export default {
       if (res.meta.status !== 200) return this.$message.error('删除用户失败')
       this.$message.success('删除用户成功')
       this.getUserList()
+    },
+    // 分配角色
+    async setRole (userInfo) {
+      this.userInfo = userInfo
+
+      // 在展示对话框之前获取所有角色列表
+      const { data: res } = await this.$http.get('roles')
+      if (res.meta.status !== 200) return this.$message.error('获取角色列表失败')
+      this.rolesList = res.data
+      this.setRoleDialogVisible = true
+    },
+    async saveRoleInfo () {
+      if (!this.selectedRoleId) {
+        return this.$message.error('请选择分配的角色')
+      }
+      const { data: res } = await this.$http.put(`users/${this.userInfo.id}/role`, {
+        rid: this.selectedRoleId
+      })
+      if (res.meta.status !== 200) return this.$message.error('更新角色失败')
+      this.getUserList()
+      this.setRoleDialogVisible = false
     }
   }
 }
