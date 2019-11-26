@@ -64,7 +64,6 @@
                 <el-form-item label="父级分类" >
                     <!-- options 用来指定数据源 props用来指定配置对象 -->
                     <el-cascader
-                        style="height:40%"
                         expand-trigger="hover"
                         :options="parentCateList"
                         :props="cascaderProps"
@@ -232,7 +231,4 @@ export default {
     width: 100%
 }
 
-.el-cascader{
-    height: 40%
-}
 </style>
